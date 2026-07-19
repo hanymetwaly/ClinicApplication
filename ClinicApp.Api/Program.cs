@@ -101,6 +101,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(
         "ReceptionistOrAdmin",
         policy => policy.RequireRole(RoleNames.Receptionist, RoleNames.Admin));
+    options.AddPolicy(
+        "ClinicStaff",
+        policy => policy.RequireRole(RoleNames.Admin, RoleNames.Doctor, RoleNames.Receptionist));
 });
 
 builder.Services.AddCors(options =>

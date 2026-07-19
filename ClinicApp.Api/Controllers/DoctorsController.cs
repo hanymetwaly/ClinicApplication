@@ -9,7 +9,7 @@ namespace ClinicApp.Api.Controllers;
 /// Lists active doctors and supports lightweight lookup for booking.
 /// </summary>
 [ApiController]
-[Authorize]
+[Authorize(Policy = "ClinicStaff")]
 [Route("api/[controller]")]
 public class DoctorsController(IClinicService clinicService) : ControllerBase
 {

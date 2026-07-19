@@ -10,7 +10,7 @@ namespace ClinicApp.Api.Controllers;
 /// Manages patient records, including search, create, update, delete, and document uploads.
 /// </summary>
 [ApiController]
-[Authorize]
+[Authorize(Policy = "ClinicStaff")]
 [Route("api/[controller]")]
 public class PatientsController(IClinicService clinicService) : ControllerBase
 {

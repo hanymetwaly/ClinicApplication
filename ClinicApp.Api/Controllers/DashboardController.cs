@@ -9,7 +9,7 @@ namespace ClinicApp.Api.Controllers;
 /// Exposes clinic dashboard metrics and chart data.
 /// </summary>
 [ApiController]
-[Authorize]
+[Authorize(Policy = "ClinicStaff")]
 [Route("api/[controller]")]
 public class DashboardController : ControllerBase
 {

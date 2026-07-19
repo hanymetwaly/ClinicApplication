@@ -11,7 +11,7 @@ namespace ClinicApp.Api.Controllers;
 /// Manages appointments: booking, cancellation, rescheduling, and paged listing.
 /// </summary>
 [ApiController]
-[Authorize]
+[Authorize(Policy = "ClinicStaff")]
 [Route("api/[controller]")]
 public class AppointmentsController(IClinicService clinicService) : ControllerBase
 {
