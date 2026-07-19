@@ -1,0 +1,14 @@
+bin/
+obj/
+node_modules/
+dist/
+.vite/
+uploads/
+*.user
+*.suo
+.vs/
+.idea/
+*.log
+*.db
+appsettings.Local.json
+appsettings.Production.json

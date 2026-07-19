@@ -1,0 +1,14 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      ACCEPT_EULA: "1"
+      MSSQL_PID: "Premium"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-ClinicApp!2026}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - clinic-sql-data:/var/opt/mssql
+
+volumes:
+  clinic-sql-data:

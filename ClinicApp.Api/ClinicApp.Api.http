@@ -1,0 +1,11 @@
+@ClinicApp_Api_HostAddress = http://localhost:5002
+
+POST {{ClinicApp_Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+###
