@@ -7,17 +7,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicApp.Api.Controllers;
 
+/// <summary>
+/// Manages invoices and records payments against outstanding balances.
+/// </summary>
 [ApiController]
 [Authorize(Policy = "ReceptionistOrAdmin")]
 [Route("api/[controller]")]
 public class InvoicesController(IClinicService clinicService) : ControllerBase
 {
+    /// <summary>
+    /// Searches and pages through invoices, optionally filtering by patient and status.
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<PagedResult<InvoiceDto>>> Get(
         Guid? patientId = null,
         InvoiceStatus? status = null,
         int page = 1,
-        int pageSize = 10,
+        int? pageSize = null,
         string? sortBy = "invoiceDate",
         bool descending = true)
     {

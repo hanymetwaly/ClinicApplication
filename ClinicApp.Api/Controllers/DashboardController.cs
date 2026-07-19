@@ -5,8 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicApp.Api.Controllers;
 
+/// <summary>
+/// Exposes clinic dashboard metrics and chart data.
+/// </summary>
 [ApiController]
-[Authorize]
+[Authorize(Policy = "ClinicStaff")]
 [Route("api/[controller]")]
 public class DashboardController : ControllerBase
 {
@@ -17,12 +20,18 @@ public class DashboardController : ControllerBase
         _service = service;
     }
 
+    /// <summary>
+    /// Returns a summary of today's appointments, patients, revenue, and unpaid invoices.
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<DashboardSummary>> Get()
     {
         return Ok(await _service.GetDashboardAsync());
     }
 
+    /// <summary>
+    /// Returns chart data for appointments and revenue over time.
+    /// </summary>
     [HttpGet("charts")]
     public async Task<ActionResult<DashboardChartData>> GetCharts()
     {

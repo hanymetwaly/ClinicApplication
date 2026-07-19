@@ -12,3 +12,4 @@ uploads/
 *.db
 appsettings.Local.json
 appsettings.Production.json
+.env

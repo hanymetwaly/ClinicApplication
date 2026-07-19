@@ -155,7 +155,7 @@ These accounts are for local assessment use only.
 
 ## Configuration
 
-ASP.NET Core environment variables override `appsettings.json` using double underscores:
+ASP.NET Core environment variables override the dev defaults in `appsettings.json` using double underscores. See `.env.example` for the complete list of variables you can set.
 
 ```bash
 export ConnectionStrings__DefaultConnection='Server=...'

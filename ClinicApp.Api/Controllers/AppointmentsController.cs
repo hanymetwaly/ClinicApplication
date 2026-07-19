@@ -7,11 +7,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicApp.Api.Controllers;
 
+/// <summary>
+/// Manages appointments: booking, cancellation, rescheduling, and paged listing.
+/// </summary>
 [ApiController]
-[Authorize]
+[Authorize(Policy = "ClinicStaff")]
 [Route("api/[controller]")]
 public class AppointmentsController(IClinicService clinicService) : ControllerBase
 {
+    /// <summary>
+    /// Searches and pages through appointments, optionally filtering by date range, doctor, and status.
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<PagedResult<AppointmentDto>>> Get(
         DateTime? startDate = null,
@@ -19,7 +25,7 @@ public class AppointmentsController(IClinicService clinicService) : ControllerBa
         Guid? doctorId = null,
         AppointmentStatus? status = null,
         int page = 1,
-        int pageSize = 10,
+        int? pageSize = null,
         string? sortBy = "startTime",
         bool descending = false)
     {

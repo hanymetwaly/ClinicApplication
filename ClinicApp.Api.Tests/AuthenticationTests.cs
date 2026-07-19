@@ -1,4 +1,5 @@
 using ClinicApp.Application.Interfaces;
+using ClinicApp.Application.Options;
 using ClinicApp.Application.Services;
 using ClinicApp.Domain.Entities;
 using ClinicApp.Infrastructure.Data;
@@ -6,6 +7,7 @@ using ClinicApp.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace ClinicApp.Api.Tests;
 
@@ -32,6 +34,7 @@ public class AuthenticationTests
             await context.AddAsync(user);
             await context.SaveChangesAsync();
 
+            var paginationOptions = Options.Create(new PaginationOptions());
             var service = new ClinicService(
                 context,
                 NullLogger<ClinicService>.Instance,
@@ -39,7 +42,8 @@ public class AuthenticationTests
                 new AppointmentRepository(context),
                 new InvoiceRepository(context),
                 passwordHasher,
-                new TestFileStorageService());
+                new TestFileStorageService(),
+                paginationOptions);
 
             var result = await service.AuthenticateAsync("testuser", "testpassword");
 
@@ -70,6 +74,7 @@ public class AuthenticationTests
             await context.AddAsync(user);
             await context.SaveChangesAsync();
 
+            var paginationOptions = Options.Create(new PaginationOptions());
             var service = new ClinicService(
                 context,
                 NullLogger<ClinicService>.Instance,
@@ -77,7 +82,8 @@ public class AuthenticationTests
                 new AppointmentRepository(context),
                 new InvoiceRepository(context),
                 passwordHasher,
-                new TestFileStorageService());
+                new TestFileStorageService(),
+                paginationOptions);
 
             var result = await service.AuthenticateAsync("testuser", "wrongpassword");
 
@@ -92,6 +98,7 @@ public class AuthenticationTests
         await using (context)
         {
             var passwordHasher = new PasswordHasher();
+            var paginationOptions = Options.Create(new PaginationOptions());
             var service = new ClinicService(
                 context,
                 NullLogger<ClinicService>.Instance,
@@ -99,7 +106,8 @@ public class AuthenticationTests
                 new AppointmentRepository(context),
                 new InvoiceRepository(context),
                 passwordHasher,
-                new TestFileStorageService());
+                new TestFileStorageService(),
+                paginationOptions);
 
             var result = await service.AuthenticateAsync("nonexistent", "password");
 
@@ -128,6 +136,7 @@ public class AuthenticationTests
             await context.AddAsync(user);
             await context.SaveChangesAsync();
 
+            var paginationOptions = Options.Create(new PaginationOptions());
             var service = new ClinicService(
                 context,
                 NullLogger<ClinicService>.Instance,
@@ -135,7 +144,8 @@ public class AuthenticationTests
                 new AppointmentRepository(context),
                 new InvoiceRepository(context),
                 passwordHasher,
-                new TestFileStorageService());
+                new TestFileStorageService(),
+                paginationOptions);
 
             var result = await service.AuthenticateAsync("testuser", "testpassword");
 

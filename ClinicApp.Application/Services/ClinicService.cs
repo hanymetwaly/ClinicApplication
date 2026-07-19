@@ -1,17 +1,23 @@
 using ClinicApp.Application.DTOs;
 using ClinicApp.Application.Exceptions;
 using ClinicApp.Application.Interfaces;
+using ClinicApp.Application.Options;
 using ClinicApp.Domain.Common;
 using ClinicApp.Domain.Entities;
 using ClinicApp.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ClinicApp.Application.Services;
 
+/// <summary>
+/// Core application service implementing the clinic use cases: patients, doctors, appointments,
+/// invoices, payments, dashboard, and document management.
+/// </summary>
 public class ClinicService : IClinicService
 {
-    private const int MaximumPageSize = 100;
+    private readonly PaginationOptions _paginationOptions;
     private readonly IClinicDbContext _context;
     private readonly ILogger<ClinicService> _logger;
     private readonly IPatientRepository _patientRepository;
@@ -20,6 +26,9 @@ public class ClinicService : IClinicService
     private readonly IPasswordHasher _passwordHasher;
     private readonly IFileStorageService _fileStorage;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ClinicService"/> class.
+    /// </summary>
     public ClinicService(
         IClinicDbContext context,
         ILogger<ClinicService> logger,
@@ -27,7 +36,8 @@ public class ClinicService : IClinicService
         IAppointmentRepository appointmentRepository,
         IInvoiceRepository invoiceRepository,
         IPasswordHasher passwordHasher,
-        IFileStorageService fileStorage)
+        IFileStorageService fileStorage,
+        IOptions<PaginationOptions> paginationOptions)
     {
         _context = context;
         _logger = logger;
@@ -36,6 +46,7 @@ public class ClinicService : IClinicService
         _invoiceRepository = invoiceRepository;
         _passwordHasher = passwordHasher;
         _fileStorage = fileStorage;
+        _paginationOptions = paginationOptions.Value;
     }
 
     public async Task SeedInitialDataAsync()
@@ -105,15 +116,18 @@ public class ClinicService : IClinicService
         return _passwordHasher.VerifyPassword(password, user.PasswordHash) ? user : null;
     }
 
+    /// <summary>
+    /// Searches and pages through patients with optional sorting.
+    /// </summary>
     public async Task<PagedResult<PatientDto>> GetPatientsAsync(
         string? search = null,
         int page = 1,
-        int pageSize = 10,
+        int? pageSize = null,
         string? sortBy = "fullName",
         bool descending = false)
     {
-        (page, pageSize) = NormalizePagination(page, pageSize);
-        var result = await _patientRepository.GetPagedAsync(search?.Trim(), page, pageSize, sortBy, descending);
+        (page, var size) = NormalizePagination(page, pageSize);
+        var result = await _patientRepository.GetPagedAsync(search?.Trim(), page, size, sortBy, descending);
         return MapPage(result, MapPatient);
     }
 
@@ -200,10 +214,12 @@ public class ClinicService : IClinicService
             .ToListAsync();
     }
 
-    public async Task<PagedResult<DoctorDto>> GetDoctorsAsync(int page = 1, int pageSize = 10, string? sortBy = "fullName", bool descending = false)
+    /// <summary>
+    /// Returns a paged list of active doctors with optional sorting.
+    /// </summary>
+    public async Task<PagedResult<DoctorDto>> GetDoctorsAsync(int page = 1, int? pageSize = null, string? sortBy = "fullName", bool descending = false)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 10;
+        (page, var size) = NormalizePagination(page, pageSize);
 
         var query = _context.Doctors
             .Where(doctor => doctor.IsActive)
@@ -224,11 +240,14 @@ public class ClinicService : IClinicService
         };
 
         var total = await query.CountAsync();
-        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-        return new PagedResult<DoctorDto>(items, total, page, pageSize);
+        var items = await query.Skip((page - 1) * size).Take(size).ToListAsync();
+        return new PagedResult<DoctorDto>(items, total, page, size);
     }
 
-    public async Task<IReadOnlyList<DoctorDto>> LookupDoctorsAsync(string? query = null, int limit = 20)
+    /// <summary>
+    /// Performs a lightweight lookup of active doctors by name or specialty.
+    /// </summary>
+    public async Task<IReadOnlyList<DoctorDto>> LookupDoctorsAsync(string? query = null, int? limit = null)
     {
         var q = _context.Doctors
             .Where(doctor => doctor.IsActive);
@@ -239,20 +258,25 @@ public class ClinicService : IClinicService
             q = q.Where(d => d.FullName.Contains(term) || d.Specialty.Contains(term));
         }
 
+        var effectiveLimit = limit ?? _paginationOptions.DefaultLookupLimit;
+
         return await q
             .OrderBy(d => d.FullName)
             .Select(d => new DoctorDto { Id = d.Id, FullName = d.FullName, Specialty = d.Specialty, Email = d.Email })
-            .Take(limit)
+            .Take(effectiveLimit)
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Searches and pages through appointments, optionally filtering by date range, doctor, and status.
+    /// </summary>
     public async Task<PagedResult<AppointmentDto>> GetAppointmentsAsync(
         DateTime? startDate = null,
         DateTime? endDate = null,
         Guid? doctorId = null,
         AppointmentStatus? status = null,
         int page = 1,
-        int pageSize = 10,
+        int? pageSize = null,
         string? sortBy = "startTime",
         bool descending = false)
     {
@@ -261,14 +285,14 @@ public class ClinicService : IClinicService
             throw new RequestValidationException("End date must not be earlier than start date.");
         }
 
-        (page, pageSize) = NormalizePagination(page, pageSize);
+        (page, var size) = NormalizePagination(page, pageSize);
         var result = await _appointmentRepository.GetPagedAsync(
             startDate,
             endDate,
             doctorId,
             status,
             page,
-            pageSize,
+            size,
             sortBy,
             descending);
         return MapPage(result, MapAppointment);
@@ -411,20 +435,23 @@ public class ClinicService : IClinicService
         return await GetInvoiceAsync(invoice.Id);
     }
 
+    /// <summary>
+    /// Searches and pages through invoices, optionally filtering by patient and status.
+    /// </summary>
     public async Task<PagedResult<InvoiceDto>> GetInvoicesAsync(
         Guid? patientId = null,
         InvoiceStatus? status = null,
         int page = 1,
-        int pageSize = 10,
+        int? pageSize = null,
         string? sortBy = "invoiceDate",
         bool descending = true)
     {
-        (page, pageSize) = NormalizePagination(page, pageSize);
+        (page, var size) = NormalizePagination(page, pageSize);
         var result = await _invoiceRepository.GetPagedAsync(
             patientId,
             status,
             page,
-            pageSize,
+            size,
             sortBy,
             descending);
         return MapPage(result, MapInvoice);
@@ -560,20 +587,24 @@ public class ClinicService : IClinicService
         }
     }
 
-    private static (int Page, int PageSize) NormalizePagination(int page, int pageSize)
+    /// <summary>
+    /// Validates and normalizes page/pageSize values, applying configured defaults and limits.
+    /// </summary>
+    private (int Page, int PageSize) NormalizePagination(int page, int? pageSize)
     {
         if (page < 1)
         {
             throw new RequestValidationException("Page must be at least 1.");
         }
 
-        if (pageSize < 1 || pageSize > MaximumPageSize)
+        var size = pageSize ?? _paginationOptions.DefaultPageSize;
+        if (size < 1 || size > _paginationOptions.MaxPageSize)
         {
             throw new RequestValidationException(
-                $"Page size must be between 1 and {MaximumPageSize}.");
+                $"Page size must be between 1 and {_paginationOptions.MaxPageSize}.");
         }
 
-        return (page, pageSize);
+        return (page, size);
     }
 
     private static PagedResult<TDestination> MapPage<TSource, TDestination>(
