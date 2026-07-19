@@ -6,16 +6,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicApp.Api.Controllers;
 
+/// <summary>
+/// Manages patient records, including search, create, update, delete, and document uploads.
+/// </summary>
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
 public class PatientsController(IClinicService clinicService) : ControllerBase
 {
+    /// <summary>
+    /// Searches and pages through patient records with optional sorting.
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<PagedResult<PatientDto>>> Get(
         string? search = null,
         int page = 1,
-        int pageSize = 10,
+        int? pageSize = null,
         string? sortBy = "fullName",
         bool descending = false)
     {

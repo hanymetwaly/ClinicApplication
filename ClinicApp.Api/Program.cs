@@ -22,6 +22,9 @@ var builder = WebApplication.CreateBuilder(args);
 var logFilePath = Path.Combine(builder.Environment.ContentRootPath, "logs", "clinic-api.log");
 builder.Logging.AddProvider(new FileLoggerProvider(logFilePath));
 
+builder.Services.Configure<ClinicApp.Application.Options.PaginationOptions>(
+    builder.Configuration.GetSection("Pagination"));
+
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -39,8 +42,12 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("The SQL Server connection string is not configured.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "The SQL Server connection string is not configured. Set the ConnectionStrings__DefaultConnection environment variable or add ConnectionStrings:DefaultConnection to user secrets/appsettings.");
+}
 builder.Services.AddDbContext<ClinicDbContext>(options =>
     options.UseSqlServer(
         connectionString,
@@ -60,8 +67,12 @@ builder.Services.AddSingleton<IFileStorageService>(new LocalFileStorageService(u
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 builder.Services.AddHostedService<AppointmentReminderService>();
 
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("JWT signing key is not configured.");
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "JWT signing key is not configured. Set the Jwt__Key environment variable or add Jwt:Key to user secrets/appsettings.");
+}
 if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
 {
     throw new InvalidOperationException("JWT signing key must be at least 32 bytes.");

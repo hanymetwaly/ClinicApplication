@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicApp.Api.Controllers;
 
+/// <summary>
+/// Provides authentication endpoints for login, token refresh, and logout.
+/// </summary>
 [ApiController]
 [AllowAnonymous]
 [Route("api/[controller]")]
@@ -12,6 +15,9 @@ public class AuthController(
     IClinicService clinicService,
     IJwtTokenService jwtTokenService) : ControllerBase
 {
+    /// <summary>
+    /// Authenticates a user and returns JWT access and refresh tokens.
+    /// </summary>
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
@@ -29,6 +35,9 @@ public class AuthController(
         return Ok(CreateResponse(user.Username, user.Role!.Name, jwtTokenService.GenerateAccessToken(user), refreshToken.Token));
     }
 
+    /// <summary>
+    /// Rotates an existing refresh token and issues a new access token.
+    /// </summary>
     [HttpPost("refresh")]
     public async Task<ActionResult<LoginResponse>> Refresh(RefreshTokenRequest request)
     {
@@ -46,6 +55,9 @@ public class AuthController(
         return Ok(CreateResponse(user.Username, user.Role!.Name, jwtTokenService.GenerateAccessToken(user), refreshToken.Token));
     }
 
+    /// <summary>
+    /// Revokes an existing refresh token so it cannot be used again.
+    /// </summary>
     [HttpPost("logout")]
     public async Task<IActionResult> Logout(RefreshTokenRequest request)
     {

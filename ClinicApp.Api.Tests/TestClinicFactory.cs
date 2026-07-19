@@ -1,4 +1,5 @@
 using ClinicApp.Application.Interfaces;
+using ClinicApp.Application.Options;
 using ClinicApp.Application.Services;
 using ClinicApp.Domain.Entities;
 using ClinicApp.Domain.Interfaces;
@@ -6,6 +7,7 @@ using ClinicApp.Infrastructure.Data;
 using ClinicApp.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace ClinicApp.Api.Tests;
 
@@ -26,6 +28,7 @@ internal static class TestClinicFactory
         IInvoiceRepository invoiceRepository = new InvoiceRepository(context);
         IPasswordHasher passwordHasher = new PasswordHasher();
         IFileStorageService fileStorage = new TestFileStorageService();
+        var paginationOptions = Options.Create(new PaginationOptions());
         var service = new ClinicService(
             context,
             NullLogger<ClinicService>.Instance,
@@ -33,7 +36,8 @@ internal static class TestClinicFactory
             appointmentRepository,
             invoiceRepository,
             passwordHasher,
-            fileStorage);
+            fileStorage,
+            paginationOptions);
 
         var patient = new Patient
         {
