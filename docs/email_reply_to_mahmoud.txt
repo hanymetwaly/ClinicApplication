@@ -1,0 +1,29 @@
+Subject: Re: Senior Developer Technical Task - Submission
+
+Dear Mahmoud,
+
+I hope this email finds you well.
+
+I am writing to confirm that the technical task has been completed and is ready for your review. As agreed, I am submitting the solution by Sunday, 19 July 2026.
+
+Please find the deliverables below:
+
+- Source code (full repository): https://github.com/hanymetwaly/ClinicApplication
+- Technical and business overview document: attached (ClinicApp_Technical_Business_Overview.pdf)
+- SQL database creation script: included in the repository at sql/schema.sql
+- README with setup instructions, technologies used, architecture overview, assumptions, and API documentation: README.md at the repository root
+- Swagger API documentation is available when the API is running at /swagger
+
+The README includes step-by-step instructions to run the application locally, and the attached PDF provides a structured technical and business overview.
+
+I remain available for a second interview at your earliest convenience to walk you through the solution, discuss the architecture and decisions, and answer any questions.
+
+For transparency, I used Windsurf with the Cascade AI coding assistant as a development aid while building and documenting this solution. All architecture, design decisions, and final code were reviewed and verified by me.
+
+Please let me know if you need any further clarification or if you would like to schedule a meeting.
+
+Best regards,
+Hany Abo Elfetouh
+
+---
+Attachment: docs/ClinicApp_Technical_Business_Overview.pdf

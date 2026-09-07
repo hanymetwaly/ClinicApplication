@@ -114,7 +114,7 @@ dotnet test ClinicAssessment.sln --no-build
 ### 3. Run the API
 
 ```bash
-dotnet run --project ClinicApp.Api/ClinicApp.Api.csproj
+dotnet run --project "[BackEnd]/ClinicApp.Api/ClinicApp.Api.csproj"
 ```
 
 The API starts at `http://localhost:5002`. On startup it applies EF Core migrations and seeds development users, one doctor, and one patient.
@@ -186,8 +186,8 @@ Create a new migration:
 
 ```bash
 dotnet tool run dotnet-ef migrations add MigrationName \
-  --project ClinicApp.Infrastructure/ClinicApp.Infrastructure.csproj \
-  --startup-project ClinicApp.Api/ClinicApp.Api.csproj \
+  --project "[BackEnd]/ClinicApp.Infrastructure/ClinicApp.Infrastructure.csproj" \
+  --startup-project "[BackEnd]/ClinicApp.Api/ClinicApp.Api.csproj" \
   --output-dir Data/Migrations
 ```
 
@@ -195,8 +195,8 @@ Regenerate the SQL deliverable:
 
 ```bash
 dotnet tool run dotnet-ef migrations script --idempotent \
-  --project ClinicApp.Infrastructure/ClinicApp.Infrastructure.csproj \
-  --startup-project ClinicApp.Api/ClinicApp.Api.csproj \
+  --project "[BackEnd]/ClinicApp.Infrastructure/ClinicApp.Infrastructure.csproj" \
+  --startup-project "[BackEnd]/ClinicApp.Api/ClinicApp.Api.csproj" \
   --output sql/schema.sql
 ```
 
